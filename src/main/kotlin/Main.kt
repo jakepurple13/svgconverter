@@ -26,7 +26,7 @@ import java.awt.datatransfer.DataFlavor
 import java.awt.dnd.*
 import java.io.File
 
-val outputDirectory = File("~/Desktop/svgconverter/")
+val outputDirectory = File(System.getProperty("user.home") + "/Desktop/svgconverter/")
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -77,34 +77,34 @@ fun FrameWindowScope.App() {
     }
 
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Svg Converter") },
-                actions = {
-                    val clipboard = LocalClipboardManager.current
-                    IconButton(
-                        onClick = { clipboard.setText(AnnotatedString(svgText)) }
-                    ) { Icon(Icons.Default.CopyAll, null) }
-                }
-            )
-        },
         bottomBar = {
             BottomAppBar(
                 actions = {
-                    Button(
-                        onClick = { showPreview = !showPreview },
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        Text("Include Preview?")
-                        Switch(
-                            checked = showPreview,
-                            onCheckedChange = { showPreview = it }
-                        )
+                        Button(
+                            onClick = { showPreview = !showPreview },
+                        ) {
+                            Text("Include Preview?")
+                            Spacer(Modifier.width(8.dp))
+                            Switch(
+                                checked = showPreview,
+                                onCheckedChange = { showPreview = it }
+                            )
+                        }
+
                     }
                 },
                 floatingActionButton = {
                     LargeFloatingActionButton(
                         onClick = {
-                            filesToConvert.forEach { it.copyTo(File(outputDirectory, it.name)) }
+                            outputDirectory.deleteRecursively()
+                            filesToConvert.forEach {
+                                runCatching { it.copyTo(File(outputDirectory, it.name)) }
+                                    .onFailure { it.printStackTrace() }
+                            }
                             listOfConversions.clear()
                             Svg2Compose.parseToString(
                                 applicationIconPackage = "com",
@@ -113,9 +113,9 @@ fun FrameWindowScope.App() {
                                 vectorsDirectory = outputDirectory,
                                 generatePreview = showPreview
                             )
-                                .onEach { println(it.toString()) }
+                                //.onEach { println(it.toString()) }
                                 .let { listOfConversions.addAll(it) }
-                        },
+                        }
                     ) { Text("Convert") }
                 }
             )
@@ -133,7 +133,7 @@ fun FrameWindowScope.App() {
                     .fillMaxHeight(),
             ) {
                 Crossfade(dragState) { target ->
-                    if(target) {
+                    if (target) {
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier.fillMaxSize()
@@ -145,7 +145,7 @@ fun FrameWindowScope.App() {
                             verticalArrangement = Arrangement.spacedBy(4.dp),
                             modifier = Modifier.fillMaxHeight()
                         ) {
-                            if(filesToConvert.isNotEmpty()) {
+                            if (filesToConvert.isNotEmpty()) {
                                 stickyHeader {
                                     TopAppBar(
                                         title = { Text("To Convert") }
@@ -168,7 +168,7 @@ fun FrameWindowScope.App() {
                                 }
                             }
 
-                            if(listOfConversions.isNotEmpty()) {
+                            if (listOfConversions.isNotEmpty()) {
                                 stickyHeader {
                                     TopAppBar(
                                         title = { Text("Converted") }
@@ -183,8 +183,8 @@ fun FrameWindowScope.App() {
                                     }
                                 ) {
                                     ListItem(
-                                        headlineContent = { Text(it.name) },
-                                        trailingContent = if(chosenVectorFile == it) {
+                                        headlineContent = { Text(it.name + ".kt") },
+                                        trailingContent = if (chosenVectorFile == it) {
                                             {
                                                 Icon(Icons.Default.CheckCircle, null)
                                             }
@@ -202,17 +202,27 @@ fun FrameWindowScope.App() {
                     .weight(1f)
                     .fillMaxHeight()
             ) {
-                SelectionContainer(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .verticalScroll(rememberScrollState()),
+                Column(
+                    modifier = Modifier.matchParentSize()
                 ) {
-                    Text(
-                        svgText,
+                    val clipboard = LocalClipboardManager.current
+                    IconButton(
+                        onClick = { clipboard.setText(AnnotatedString(svgText)) },
+                        enabled = svgText.isNotEmpty(),
+                        modifier = Modifier.align(Alignment.End)
+                    ) { Icon(Icons.Default.CopyAll, null) }
+                    SelectionContainer(
                         modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxHeight(),
-                    )
+                            .fillMaxHeight()
+                            .verticalScroll(rememberScrollState()),
+                    ) {
+                        Text(
+                            svgText,
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .fillMaxHeight(),
+                        )
+                    }
                 }
             }
         }
@@ -222,34 +232,12 @@ fun FrameWindowScope.App() {
 fun main() {
     Runtime.getRuntime().addShutdownHook(Thread { outputDirectory.deleteRecursively() })
     application {
-        Window(onCloseRequest = ::exitApplication) {
-            MaterialTheme(
-                colorScheme = darkColorScheme(
-                    primary = Color(0xff8bd0f0),
-                    onPrimary = Color(0xff003546),
-                    primaryContainer = Color(0xff004d64),
-                    onPrimaryContainer = Color(0xffbee9ff),
-                    inversePrimary = Color(0xff126682),
-                    secondary = Color(0xffb4cad6),
-                    onSecondary = Color(0xff1f333c),
-                    secondaryContainer = Color(0xff354a54),
-                    onSecondaryContainer = Color(0xffd0e6f2),
-                    tertiary = Color(0xffc6c2ea),
-                    onTertiary = Color(0xff2f2d4d),
-                    tertiaryContainer = Color(0xff454364),
-                    onTertiaryContainer = Color(0xffe3dfff),
-                    background = Color(0xff191c1e),
-                    onBackground = Color(0xffe1e2e4),
-                    surface = Color(0xff191c1e),
-                    onSurface = Color(0xffe1e2e4),
-                    surfaceVariant = Color(0xff40484c),
-                    onSurfaceVariant = Color(0xffc5c7c9),
-                    inverseSurface = Color(0xffe1e2e4),
-                    inverseOnSurface = Color(0xff2e3133),
-                    outline = Color(0xff8a9297),
-                )
-            ) {
-                Surface {
+        WindowWithBar(
+            onCloseRequest = ::exitApplication,
+            windowTitle = "Svg Converter"
+        ) {
+            Surface {
+                with(LocalWindow.current) {
                     App()
                 }
             }
