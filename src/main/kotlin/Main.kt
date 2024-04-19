@@ -1,44 +1,31 @@
-import androidx.compose.animation.*
-import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.CopyAll
+import androidx.compose.material.icons.generator.FileInfo
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import com.squareup.kotlinpoet.MemberName
-import kotlinx.coroutines.launch
 import java.awt.datatransfer.DataFlavor
 import java.awt.dnd.*
 import java.io.File
-import java.nio.file.Files
-import kotlin.time.Duration
 
-val directoryPath = "/Users/jacobrein/Documents/Setup Wizard - Gabb Phone 4/New Folder With Items/"
-val filePath = "/Users/jacobrein/Documents/Setup Wizard - Gabb Phone 4/artwork.svg"
 val outputDirectory = File("~/Desktop/svgconverter/")
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -46,9 +33,9 @@ val outputDirectory = File("~/Desktop/svgconverter/")
 fun FrameWindowScope.App() {
     var svgText by remember { mutableStateOf("") }
     var showPreview by remember { mutableStateOf(false) }
-    val listOfConversions = remember { mutableStateMapOf<VectorFile, MemberName>() }
+    val listOfConversions = remember { mutableStateListOf<FileInfo>() }
     val filesToConvert = remember { mutableStateListOf<File>() }
-    var chosenVectorFile by remember { mutableStateOf<VectorFile?>(null) }
+    var chosenVectorFile by remember { mutableStateOf<FileInfo?>(null) }
 
     var dragState by remember { mutableStateOf(false) }
 
@@ -118,25 +105,16 @@ fun FrameWindowScope.App() {
                     LargeFloatingActionButton(
                         onClick = {
                             filesToConvert.forEach { it.copyTo(File(outputDirectory, it.name)) }
-                            Svg2Compose.parse(
+                            listOfConversions.clear()
+                            Svg2Compose.parseToString(
                                 applicationIconPackage = "com",
                                 accessorName = "Hello",
                                 outputSourceDirectory = outputDirectory,
                                 vectorsDirectory = outputDirectory,
                                 generatePreview = showPreview
-                            ).let {
-                                filesToConvert.clear()
-                                listOfConversions.clear()
-                                listOfConversions.putAll(it.generatedIconsMemberNames)
-                                println(it)
-                                it.generatedIconsMemberNames.forEach { (t, u) ->
-                                    println(t.name)
-                                    println(t.absolutePath)
-                                    println(u.simpleName)
-                                    println(u.packageName)
-                                    println("-".repeat(5))
-                                }
-                            }
+                            )
+                                .onEach { println(it.toString()) }
+                                .let { listOfConversions.addAll(it) }
                         },
                     ) { Text("Convert") }
                 }
@@ -197,16 +175,16 @@ fun FrameWindowScope.App() {
                                     )
                                 }
                             }
-                            items(listOfConversions.entries.toList()) {
+                            items(listOfConversions) {
                                 OutlinedCard(
                                     onClick = {
-                                        chosenVectorFile = it.key
-                                        svgText = File(it.key.absolutePath.replace(".svg", ".kt")).readText()
+                                        chosenVectorFile = it
+                                        svgText = it.fileSpec.toString()
                                     }
                                 ) {
                                     ListItem(
-                                        headlineContent = { Text(it.key.name) },
-                                        trailingContent = if(chosenVectorFile == it.key) {
+                                        headlineContent = { Text(it.name) },
+                                        trailingContent = if(chosenVectorFile == it) {
                                             {
                                                 Icon(Icons.Default.CheckCircle, null)
                                             }

@@ -17,6 +17,7 @@
 package androidx.compose.material.icons.generator
 
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.MemberName
 import java.io.File
 
@@ -69,4 +70,35 @@ class IconWriter(
             MemberName(fileSpec.packageName, accessProperty)
         }
     }
+
+    fun generateToString(
+        outputSrcDirectory: File,
+        iconNamePredicate: (String) -> Boolean
+    ): List<FileInfo> {
+
+        return icons.filter { icon ->
+            val iconName = icon.kotlinName
+
+            iconNamePredicate(iconName)
+        }.map { icon ->
+            val iconName = icon.kotlinName
+
+            val vector = IconParser(icon).parse()
+
+            val (fileSpec, accessProperty) = VectorAssetGenerator(
+                iconName,
+                groupPackage,
+                vector,
+                generatePreview
+            ).createFileSpec(groupClass)
+
+            FileInfo(fileSpec, icon.kotlinName)
+
+            //fileSpec.writeTo(outputSrcDirectory)
+
+            //MemberName(fileSpec.packageName, accessProperty)
+        }
+    }
 }
+
+data class FileInfo(val fileSpec: FileSpec, val name: String)
