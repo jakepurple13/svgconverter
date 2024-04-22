@@ -99,6 +99,34 @@ class IconWriter(
             //MemberName(fileSpec.packageName, accessProperty)
         }
     }
+
+    fun generateToString(
+        iconNamePredicate: (String) -> Boolean = { true },
+    ): List<FileInfo> {
+
+        return icons.filter { icon ->
+            val iconName = icon.kotlinName
+
+            iconNamePredicate(iconName)
+        }.map { icon ->
+            val iconName = icon.kotlinName
+
+            val vector = IconParser(icon).parse()
+
+            val (fileSpec, accessProperty) = VectorAssetGenerator(
+                iconName,
+                groupPackage,
+                vector,
+                generatePreview
+            ).createFileSpec(groupClass)
+
+            FileInfo(fileSpec, icon.kotlinName)
+
+            //fileSpec.writeTo(outputSrcDirectory)
+
+            //MemberName(fileSpec.packageName, accessProperty)
+        }
+    }
 }
 
 data class FileInfo(val fileSpec: FileSpec, val name: String)

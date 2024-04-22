@@ -13,6 +13,8 @@ typealias IconNameTransformer = (iconName: String, group: String) -> String
 object Svg2Compose {
 
     /**
+     * This is the default.
+     *
      * Generates source code for the [vectors] files.
      *
      * Supported types: SVG, Android Vector Drawable XML
@@ -148,6 +150,17 @@ object Svg2Compose {
         return groupStack.pop().asParsingResult()
     }
 
+    /**
+     * This is for when the files are all in a single folder.
+     *
+     * Parses the given icons in the provided vectors directory and generates Kotlin files
+     * representing the icons using the [IconWriter] and [VectorAssetGenerator].The generated
+     * files are written to the output source directory.
+     *
+     * @param accessorName the name of the generated Kotlin class that will provide access to the icons
+     * @param outputSourceDirectory the directory where the generated Kotlin files will be written
+     * @param vectorsDirectory the directory containing the icons to parse
+     * @param iconNameTransformer the function used to transform the icon name to*/
     fun parseToString(
         accessorName: String,
         outputSourceDirectory: File,
@@ -159,8 +172,6 @@ object Svg2Compose {
 
         val drawableDir = drawableTempDirectory()
 
-        val groupStack = Stack<GeneratedGroup>()
-
         val f = vectorsDirectory.walkTopDown()
             .maxDepth(10)
             .map { file ->
@@ -169,10 +180,8 @@ object Svg2Compose {
                     //?.filter { it.extension.equals(type.extension, ignoreCase = true) }
                     .orEmpty()
 
-                val previousGroup = groupStack.peekOrNull()
-
                 // if there is no previous group, this is the root dir, and the group name should be the accessorName
-                val groupName = if (previousGroup == null) accessorName else file.name.toKotlinPropertyName()
+                val groupName = accessorName
 
                 if (dirIcons.isNotEmpty()) {
                     val drawables: List<Pair<File, File>> = dirIcons.mapNotNull {
@@ -223,76 +232,64 @@ object Svg2Compose {
         return f.flatten().toList()
     }
 
+    /**
+     * This is for direct file to string conversions.
+     *
+     * Parses a list of files and generates Kotlin code representations of icons.
+     *
+     * @param accessorName the name of the Kotlin property used to access the generated icons
+     * @param outputSourceDirectory the directory where the Kotlin code will be generated
+     * @param fileList the list of files to parse and generate icons for
+     * @param iconNameTransformer transforms the icon name to a valid Kotlin property name (default implementation converts snake_case to upper camel case)
+     * @param generatePreview whether to generate preview code for the icons (default is true)
+     * @return the list of generated FileInfo objects, containing the generated FileSpec and the name of the icon
+     */
     fun parseToString(
         accessorName: String,
-        outputSourceDirectory: File,
         fileList: List<File>,
         iconNameTransformer: IconNameTransformer = { it, _ -> it.toKotlinPropertyName() },
         generatePreview: Boolean = true,
     ): List<FileInfo> {
         val drawableDir = drawableTempDirectory()
 
-        val groupStack = Stack<GeneratedGroup>()
+        return fileList
+            .mapNotNull {
+                when (VectorType.entries.find { v -> v.extension == it.extension }) {
+                    VectorType.SVG -> {
+                        val iconName = it.nameWithoutExtension
 
-        val f = fileList
-            .map { file ->
-                val dirIcons = file.listFiles()
-                    ?.filter { it.isDirectory.not() }
-                    //?.filter { it.extension.equals(type.extension, ignoreCase = true) }
-                    .orEmpty()
+                        val parsedFile = File(drawableDir, "${iconName}.xml")
+                        parsedFile.parentFile.mkdirs()
 
-                val previousGroup = groupStack.peekOrNull()
+                        Svg2Vector.parseSvgToXml(it, parsedFile.outputStream())
 
-                // if there is no previous group, this is the root dir, and the group name should be the accessorName
-                val groupName = if (previousGroup == null) accessorName else file.name.toKotlinPropertyName()
-
-                if (dirIcons.isNotEmpty()) {
-                    val drawables: List<Pair<File, File>> = dirIcons.mapNotNull {
-                        when (VectorType.entries.find { v -> v.extension == it.extension }) {
-                            VectorType.SVG -> {
-                                val iconName = it.nameWithoutExtension
-
-                                val parsedFile = File(drawableDir, "${iconName}.xml")
-                                parsedFile.parentFile.mkdirs()
-
-                                Svg2Vector.parseSvgToXml(it, parsedFile.outputStream())
-
-                                it to parsedFile
-                            }
-
-                            VectorType.DRAWABLE -> it to it
-                            else -> null
-                        }
+                        it to parsedFile
                     }
 
-                    val icons: Map<VectorFile, Icon> = drawables.associate { (vectorFile, drawableFile) ->
-                        vectorFile to Icon(
-                            iconNameTransformer(
-                                drawableFile.nameWithoutExtension.trim(),
-                                groupName
-                            ),
-                            drawableFile.name,
-                            drawableFile.readText()
-                        )
-                    }
-
-                    val writer = IconWriter(
-                        icons.values,
-                        ClassName("", accessorName),
-                        "",
-                        generatePreview
-                    )
-
-                    val memberNames = writer.generateToString(outputSourceDirectory) { true }
-
-                    memberNames
-                } else {
-                    emptyList()
+                    VectorType.DRAWABLE -> it to it
+                    else -> null
                 }
-
             }
+            .associate { (vectorFile, drawableFile) ->
+                vectorFile to Icon(
+                    iconNameTransformer(
+                        drawableFile.nameWithoutExtension.trim(),
+                        accessorName
+                    ),
+                    drawableFile.name,
+                    drawableFile.readText()
+                )
+            }
+            .let { icons ->
+                val writer = IconWriter(
+                    icons.values,
+                    ClassName("", accessorName),
+                    "",
+                    generatePreview
+                )
 
-        return f.flatten().toList()
+                writer.generateToString()
+            }
     }
 
     private fun drawableTempDirectory() = createTempDir(suffix = "svg2compose/")

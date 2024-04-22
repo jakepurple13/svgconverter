@@ -128,20 +128,29 @@ fun FrameWindowScope.App() {
                 floatingActionButton = {
                     LargeFloatingActionButton(
                         onClick = {
-                            outputDirectory.deleteRecursively()
+                            listOfConversions.clear()
+
+
+                            //Use this for when we want them all in a folder
+                            /*outputDirectory.deleteRecursively()
                             filesToConvert.forEach {
                                 runCatching { it.copyTo(File(outputDirectory, it.name)) }
                                     .onFailure { it.printStackTrace() }
                             }
-                            listOfConversions.clear()
+
                             Svg2Compose.parseToString(
                                 accessorName = "Hello",
                                 outputSourceDirectory = outputDirectory,
                                 vectorsDirectory = outputDirectory,
-                                //fileList = filesToConvert,
                                 generatePreview = showPreview
                             )
-                                //.onEach { println(it.toString()) }
+                            */
+
+                            Svg2Compose.parseToString(
+                                accessorName = "Hello",
+                                fileList = filesToConvert,
+                                generatePreview = showPreview
+                            )
                                 .let { listOfConversions.addAll(it) }
                         }
                     ) { Text("Convert") }
