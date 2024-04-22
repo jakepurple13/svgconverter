@@ -75,13 +75,13 @@ jobs:
           name: distributable-${{ matrix.os }}
           if-no-files-found: ignore
           path: |
-            svgconverter/build/**/*.dmg
-            svgconverter/build/**/*.app
-            svgconverter/build/**/*.deb
-            svgconverter/build/**/*.msi
-            svgconverter/build/**/*.exe
-            svgconverter/build/compose/jars/*.jar
-            svgconverter/build/compose/binaries/main/app/**
+            svgconverter/svgconverter/build/**/*.dmg
+            svgconverter/svgconverter/build/**/*.app
+            svgconverter/svgconverter/build/**/*.deb
+            svgconverter/svgconverter/build/**/*.msi
+            svgconverter/svgconverter/build/**/*.exe
+            svgconverter/svgconverter/build/compose/jars/*.jar
+            svgconverter/svgconverter/build/compose/binaries/main/app/**
 
   release:
     name: Release new version
