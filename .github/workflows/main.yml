@@ -81,6 +81,7 @@ jobs:
             svgconverter/build/**/*.msi
             svgconverter/build/**/*.exe
             svgconverter/build/compose/jars/*.jar
+            svgconverter/build/compose/binaries/main/app/**
 
   release:
     name: Release new version
