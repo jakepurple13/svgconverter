@@ -32,7 +32,7 @@ class IconWriter(
     private val icons: Collection<Icon>,
     private val groupClass: ClassName,
     private val groupPackage: String,
-    private val generatePreview: Boolean
+    private val generatePreview: Boolean,
 ) {
     /**
      * Generates icons and writes them to [outputSrcDirectory], using [iconNamePredicate] to
@@ -46,9 +46,8 @@ class IconWriter(
      */
     fun generateTo(
         outputSrcDirectory: File,
-        iconNamePredicate: (String) -> Boolean
+        iconNamePredicate: (String) -> Boolean,
     ): List<MemberName> {
-
         return icons.filter { icon ->
             val iconName = icon.kotlinName
 
@@ -73,7 +72,7 @@ class IconWriter(
 
     fun generateToString(
         outputSrcDirectory: File,
-        iconNamePredicate: (String) -> Boolean
+        iconNamePredicate: (String) -> Boolean,
     ): List<FileInfo> {
 
         return icons.filter { icon ->
@@ -105,26 +104,19 @@ class IconWriter(
     ): List<FileInfo> {
 
         return icons.filter { icon ->
-            val iconName = icon.kotlinName
-
-            iconNamePredicate(iconName)
+            iconNamePredicate(icon.kotlinName)
         }.map { icon ->
             val iconName = icon.kotlinName
 
             val vector = IconParser(icon).parse()
 
-            val (fileSpec, accessProperty) = VectorAssetGenerator(
+            val (fileSpec, _) = VectorAssetGenerator(
                 iconName,
                 groupPackage,
                 vector,
                 generatePreview
             ).createFileSpec(groupClass)
-
             FileInfo(fileSpec, icon.kotlinName)
-
-            //fileSpec.writeTo(outputSrcDirectory)
-
-            //MemberName(fileSpec.packageName, accessProperty)
         }
     }
 }

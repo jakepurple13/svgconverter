@@ -19,12 +19,9 @@ package androidx.compose.material.icons.generator
 
 import androidx.compose.material.icons.generator.vector.*
 import org.xmlpull.v1.XmlPullParser
-import org.xmlpull.v1.XmlPullParser.END_DOCUMENT
-import org.xmlpull.v1.XmlPullParser.END_TAG
-import org.xmlpull.v1.XmlPullParser.START_TAG
+import org.xmlpull.v1.XmlPullParser.*
 import org.xmlpull.v1.XmlPullParserException
 import org.xmlpull.v1.XmlPullParserFactory
-import kotlin.math.log10
 
 /**
  * Parser that converts [icon]s into [Vector]s
@@ -71,10 +68,24 @@ class IconParser(private val icon: Icon) {
                                 else -> FillType.NonZero
                             }
                             val strokeCap = parser.getAttributeValue(null, STROKE_LINE_CAP)
-                                ?.let { StrokeCap.values().find { strokeCap -> strokeCap.name.equals(it, ignoreCase = true) } }
+                                ?.let {
+                                    StrokeCap.entries.find { strokeCap ->
+                                        strokeCap.name.equals(
+                                            it,
+                                            ignoreCase = true
+                                        )
+                                    }
+                                }
                             val strokeWidth = rawAsGraphicUnit(parser.getAttributeValue(null, STROKE_WIDTH) ?: "0")
                             val strokeJoin = parser.getAttributeValue(null, STROKE_LINE_JOIN)
-                                ?.let { StrokeJoin.values().find { strokeJoin -> strokeJoin.name.equals(it, ignoreCase = true) } }
+                                ?.let {
+                                    StrokeJoin.entries.find { strokeJoin ->
+                                        strokeJoin.name.equals(
+                                            it,
+                                            ignoreCase = true
+                                        )
+                                    }
+                                }
                             val strokeMiterLimit = parser.getValueAsFloat(STROKE_MITER_LIMIT)
 
                             val strokeColor = parser.getAttributeValue(null, STROKE_COLOR)

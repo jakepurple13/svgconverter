@@ -9,7 +9,7 @@ import com.squareup.kotlinpoet.*
 import java.util.*
 
 data class VectorAssetGenerationResult(
-    val sourceGeneration: FileSpec, val accessProperty: String
+    val sourceGeneration: FileSpec, val accessProperty: String,
 )
 
 /**
@@ -28,7 +28,7 @@ class VectorAssetGenerator(
     private val iconName: String,
     private val iconGroupPackage: String,
     private val vector: Vector,
-    private val generatePreview: Boolean
+    private val generatePreview: Boolean,
 ) {
     /**
      * @return a [FileSpec] representing a Kotlin source file containing the property for this
@@ -49,14 +49,14 @@ class VectorAssetGenerator(
         val generation = FileSpec.builder(
             packageName = iconGroupPackage,
             fileName = iconName
-        ).addProperty(
-            PropertySpec.builder(name = iconName, type = ClassNames.ImageVector)
-                //.receiver(groupClassName)
-                .getter(iconGetter(backingProperty))
-                .build()
-        ).addProperty(
-            backingProperty
         )
+            .addProperty(
+                PropertySpec.builder(name = iconName, type = ClassNames.ImageVector)
+                    //.receiver(groupClassName)
+                    .getter(iconGetter(backingProperty))
+                    .build()
+            )
+            .addProperty(backingProperty)
             .apply { if (generatePreview) addFunction(iconPreview(MemberName("", iconName))) }
             .setIndent()
             .build()
@@ -154,6 +154,7 @@ private fun CodeBlock.Builder.addRecursively(vectorNode: VectorNode) {
             }
             endControlFlow()
         }
+
         is VectorNode.Path -> {
             addPath(vectorNode) {
                 vectorNode.nodes.forEach { pathNode ->
@@ -170,14 +171,14 @@ private fun CodeBlock.Builder.addRecursively(vectorNode: VectorNode) {
  */
 private fun CodeBlock.Builder.addPath(
     path: VectorNode.Path,
-    pathBody: CodeBlock.Builder.() -> Unit
+    pathBody: CodeBlock.Builder.() -> Unit,
 ) {
     val hasStrokeColor = path.strokeColorHex != null
 
     val parameterList = with(path) {
         listOfNotNull(
             "fill = ${getPathFill(path)}",
-            "stroke = ${if(hasStrokeColor) "%M(%M(0x$strokeColorHex))" else "null"}",
+            "stroke = ${if (hasStrokeColor) "%M(%M(0x$strokeColorHex))" else "null"}",
             "fillAlpha = ${fillAlpha}f".takeIf { fillAlpha != 1f },
             "strokeAlpha = ${strokeAlpha}f".takeIf { strokeAlpha != 1f },
             "strokeLineWidth = ${strokeLineWidth.withMemberIfNotNull}",
@@ -200,11 +201,12 @@ private fun CodeBlock.Builder.addPath(
         path.fillType.memberName
     ).toMutableList().apply {
         var fillIndex = 1
-        when (path.fill){
+        when (path.fill) {
             is Fill.Color -> {
                 add(fillIndex, MemberNames.SolidColor)
                 add(++fillIndex, MemberNames.Color)
             }
+
             is Fill.LinearGradient -> {
                 add(fillIndex, MemberNames.LinearGradient)
                 path.fill.colorStops.forEach { _ ->
@@ -213,6 +215,7 @@ private fun CodeBlock.Builder.addPath(
                 add(++fillIndex, MemberNames.Offset)
                 add(++fillIndex, MemberNames.Offset)
             }
+
             is Fill.RadialGradient -> {
                 add(fillIndex, MemberNames.RadialGradient)
                 path.fill.colorStops.forEach { _ ->
@@ -220,51 +223,51 @@ private fun CodeBlock.Builder.addPath(
                 }
                 add(++fillIndex, MemberNames.Offset)
             }
+
             null -> {}
         }
     }.toTypedArray()
 
-    beginControlFlow(
-        "%M$parameters",
-        *members
-    )
+    beginControlFlow("%M$parameters", *members)
 
     pathBody()
     endControlFlow()
 }
 
-private fun getPathFill (
-    path: VectorNode.Path
-) = when (path.fill){
+private fun getPathFill(
+    path: VectorNode.Path,
+) = when (path.fill) {
     is Fill.Color -> "%M(%M(0x${path.fill.colorHex}))"
     is Fill.LinearGradient -> {
-        with (path.fill){
+        with(path.fill) {
             "%M(" +
-                    "${getGradientStops(path.fill.colorStops).toString().removeSurrounding("[","]")}, " +
+                    "${getGradientStops(path.fill.colorStops).toString().removeSurrounding("[", "]")}, " +
                     "start = %M(${startX}f,${startY}f), " +
                     "end = %M(${endX}f,${endY}f))"
         }
     }
+
     is Fill.RadialGradient -> {
-        with (path.fill){
-            "%M(${getGradientStops(path.fill.colorStops).toString().removeSurrounding("[","]")}, " +
+        with(path.fill) {
+            "%M(${getGradientStops(path.fill.colorStops).toString().removeSurrounding("[", "]")}, " +
                     "center = %M(${centerX}f,${centerY}f), " +
                     "radius = ${gradientRadius}f)"
         }
     }
+
     else -> "null"
 }
 
 private fun getGradientStops(
-    stops: List<Pair<Float, String>>
+    stops: List<Pair<Float, String>>,
 ) = stops.map { stop ->
     "${stop.first}f to %M(0x${stop.second})"
 }
 
 private fun CodeBlock.Builder.addLinearGradient(
     gradient: Fill.LinearGradient,
-    pathBody: CodeBlock.Builder.() -> Unit
-){
+    pathBody: CodeBlock.Builder.() -> Unit,
+) {
     //"0.0f to Color.Red"
     val parameterList = with(gradient) {
         listOfNotNull(

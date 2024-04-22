@@ -9,21 +9,21 @@ class AllIconAccessorGenerator(
     private val iconProperties: Collection<MemberName>,
     private val accessClass: ClassName,
     private val allAssetsPropertyName: String,
-    private val childGroups: List<GeneratedGroup>
+    private val childGroups: List<GeneratedGroup>,
 ) {
     fun createPropertySpec(
         fileSpec: FileSpec.Builder,
     ): List<PropertySpec> {
         val list = (List::class).asClassName()
-        // preventing that a asset has the name List and conflict with Kotlin List import
+        // preventing that an asset has the name List and conflict with Kotlin List import
         fileSpec.addAliasedImport(list, "____KtList")
 
         val allIconsType = list.parameterizedBy(ClassNames.ImageVector)
         val allIconsBackingProperty = backingPropertySpec("__$allAssetsPropertyName", allIconsType)
 
-        // preventing import conflict when different groups has the same asset name.
+        // preventing import conflict when different groups have the same asset name.
         iconProperties.forEach { memberName ->
-            if(memberName.simpleName == accessClass.simpleName) {
+            if (memberName.simpleName == accessClass.simpleName) {
                 // preventing import conflict when the asset name is the same name as the accessor
                 fileSpec.addAliasedImport(memberName, "___${memberName.simpleName}")
             }
@@ -44,7 +44,7 @@ class AllIconAccessorGenerator(
             .receiver(accessClass)
             .getter(FunSpec.getterBuilder().withBackingProperty(allIconsBackingProperty) {
                 addStatement(
-                    "%N= ${if(childGroups.isNotEmpty()) "$childGroupsParameters + " else ""}listOf$parameters",
+                    "%N= ${if (childGroups.isNotEmpty()) "$childGroupsParameters + " else ""}listOf$parameters",
                     allIconsBackingProperty,
                     *(childGroups.map(::groupAllIconsMember) + iconProperties).toTypedArray()
                 )

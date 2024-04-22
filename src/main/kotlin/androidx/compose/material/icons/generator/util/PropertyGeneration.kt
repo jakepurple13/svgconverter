@@ -1,6 +1,5 @@
 package androidx.compose.material.icons.generator.util
 
-import androidx.compose.material.icons.generator.ClassNames
 import com.squareup.kotlinpoet.*
 
 /**
@@ -20,7 +19,7 @@ internal fun backingPropertySpec(name: String, type: TypeName): PropertySpec {
 
 internal inline fun FunSpec.Builder.withBackingProperty(
     backingProperty: PropertySpec,
-    block: FunSpec.Builder.() -> Unit
+    block: FunSpec.Builder.() -> Unit,
 ): FunSpec.Builder = apply {
     addCode(buildCodeBlock {
         beginControlFlow("if (%N != null)", backingProperty)
