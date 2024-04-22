@@ -56,7 +56,7 @@ fun FrameWindowScope.App() {
                 setFilenameFilter { f, name -> name.endsWith(".svg") || name.endsWith(".xml") }
                 isMultipleMode = true
             }
-        ) { path, files ->
+        ) { _, files ->
             if (!files.isNullOrEmpty()) {
                 filesToConvert.addAll(files)
             }
@@ -129,8 +129,6 @@ fun FrameWindowScope.App() {
                     LargeFloatingActionButton(
                         onClick = {
                             listOfConversions.clear()
-
-
                             //Use this for when we want them all in a folder
                             /*outputDirectory.deleteRecursively()
                             filesToConvert.forEach {
