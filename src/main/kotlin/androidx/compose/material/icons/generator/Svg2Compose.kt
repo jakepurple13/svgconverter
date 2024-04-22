@@ -252,7 +252,6 @@ object Svg2Compose {
         val drawableDir = drawableTempDirectory()
 
         return fileList
-            .asSequence()
             .mapNotNull {
                 when (VectorType.entries.find { v -> v.extension == it.extension }) {
                     VectorType.SVG -> {
