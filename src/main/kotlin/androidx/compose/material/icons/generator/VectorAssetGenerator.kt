@@ -42,7 +42,6 @@ class VectorAssetGenerator(
         // Kotlin 1.4) each property with the same name will be considered as a possible candidate
         // for resolution, regardless of the access modifier, so by using unique names we reduce
         // the size from ~6000 to 1, and speed up compilation time for these icons.
-        @OptIn(ExperimentalStdlibApi::class)
         val backingPropertyName = "_" + iconName.decapitalize(Locale.ROOT)
         val backingProperty = backingPropertySpec(name = backingPropertyName, ClassNames.ImageVector)
 
@@ -70,7 +69,6 @@ class VectorAssetGenerator(
      * property, and then returns the backing property.
      */
     private fun iconGetter(backingProperty: PropertySpec): FunSpec {
-
         val parameterList = with(vector) {
             listOfNotNull(
                 "name = \"${iconName}\"",

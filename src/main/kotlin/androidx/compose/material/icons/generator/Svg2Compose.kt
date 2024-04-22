@@ -285,7 +285,7 @@ object Svg2Compose {
                     ClassName("", accessorName),
                     "",
                     generatePreview
-                ).generateToString()
+                ).generateToString(icons)
             }
     }
 

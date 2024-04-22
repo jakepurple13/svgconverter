@@ -100,15 +100,16 @@ class IconWriter(
     }
 
     fun generateToString(
+        icons: Map<File, Icon>,
         iconNamePredicate: (String) -> Boolean = { true },
     ): List<FileInfo> {
 
         return icons.filter { icon ->
-            iconNamePredicate(icon.kotlinName)
+            iconNamePredicate(icon.value.kotlinName)
         }.map { icon ->
-            val iconName = icon.kotlinName
+            val iconName = icon.value.kotlinName
 
-            val vector = IconParser(icon).parse()
+            val vector = IconParser(icon.value).parse()
 
             val (fileSpec, _) = VectorAssetGenerator(
                 iconName,
@@ -116,9 +117,9 @@ class IconWriter(
                 vector,
                 generatePreview
             ).createFileSpec(groupClass)
-            FileInfo(fileSpec, icon.kotlinName)
+            FileInfo(fileSpec, icon.value.kotlinName, icon.key)
         }
     }
 }
 
-data class FileInfo(val fileSpec: FileSpec, val name: String)
+data class FileInfo(val fileSpec: FileSpec, val name: String, val file: File? = null)

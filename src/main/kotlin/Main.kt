@@ -148,8 +148,7 @@ fun FrameWindowScope.App() {
                                 accessorName = "Hello",
                                 fileList = filesToConvert,
                                 generatePreview = showPreview
-                            )
-                                .let { listOfConversions.addAll(it) }
+                            ).let(listOfConversions::addAll)
                         }
                     ) { Text("Convert") }
                 }
@@ -240,11 +239,21 @@ fun FrameWindowScope.App() {
                                         ) {
                                             ListItem(
                                                 headlineContent = { Text(it.name + ".kt") },
-                                                trailingContent = if (chosenVectorFile == it) {
+                                                leadingContent = it.file?.let { file ->
+                                                    {
+                                                        KamelImage(
+                                                            resource = asyncPainterResource(data = file),
+                                                            contentDescription = it.name,
+                                                            onLoading = { progress -> CircularProgressIndicator({ progress }) },
+                                                            modifier = Modifier.size(50.dp)
+                                                        )
+                                                    }
+                                                },
+                                                trailingContent = it.takeIf { it == chosenVectorFile }?.let {
                                                     {
                                                         Icon(Icons.Default.CheckCircle, null)
                                                     }
-                                                } else null
+                                                }
                                             )
                                         }
                                     }
