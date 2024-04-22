@@ -65,17 +65,32 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Gradle Build
-        id: gradle-build
-        run: ./gradlew createDistributable
-
-      - name: Archive Artifacts
-        uses: actions/upload-artifact@v3
+      - name: Build with Gradle
+        uses: gradle/gradle-build-action@v2
         with:
-          name: distributable-${{ matrix.os }}
-          if-no-files-found: ignore
+          gradle-version: current
+          arguments: ":svgconverter:packageDistributionForCurrentOS"
+
+      - name: Upload ${{ matrix.os }} Build
+        uses: actions/upload-artifact@v2
+        with:
+          name: macos-build
           path: |
-            build/compose/binaries/main/app/
+            build/compose/binaries/main/dmg/*.dmg
+            build/compose/binaries/main/deb/*.deb
+            build/compose/binaries/main/msi/*.msi
+
+  #      - name: Gradle Build
+  #        id: gradle-build
+  #        run: ./gradlew createDistributable
+
+  #      - name: Archive Artifacts
+  #        uses: actions/upload-artifact@v3
+  #        with:
+  #          name: distributable-${{ matrix.os }}
+  #          if-no-files-found: ignore
+  #          path: |
+  #            build/compose/binaries/main/app/
 
   release:
     name: Release new version
