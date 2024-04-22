@@ -6,7 +6,7 @@ import androidx.compose.material.icons.generator.vector.Fill
 import androidx.compose.material.icons.generator.vector.Vector
 import androidx.compose.material.icons.generator.vector.VectorNode
 import com.squareup.kotlinpoet.*
-import java.util.Locale
+import java.util.*
 
 data class VectorAssetGenerationResult(
     val sourceGeneration: FileSpec, val accessProperty: String
@@ -57,8 +57,9 @@ class VectorAssetGenerator(
         ).addProperty(
             backingProperty
         )
-            .apply { if (generatePreview) addFunction(iconPreview(MemberName(groupClassName, iconName))) }
-            .setIndent().build()
+            .apply { if (generatePreview) addFunction(iconPreview(MemberName("", iconName))) }
+            .setIndent()
+            .build()
 
         return VectorAssetGenerationResult(generation, iconName)
     }

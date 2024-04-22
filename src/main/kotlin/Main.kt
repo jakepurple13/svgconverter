@@ -41,7 +41,7 @@ val outputDirectory = File(System.getProperty("user.home") + "/Desktop/svgconver
 @Composable
 fun FrameWindowScope.App() {
     var svgText by remember { mutableStateOf("") }
-    var showPreview by remember { mutableStateOf(false) }
+    var showPreview by remember { mutableStateOf(true) }
     val listOfConversions = remember { mutableStateListOf<FileInfo>() }
     val filesToConvert = remember { mutableStateListOf<File>() }
     var chosenVectorFile by remember { mutableStateOf<FileInfo?>(null) }
@@ -135,7 +135,6 @@ fun FrameWindowScope.App() {
                             }
                             listOfConversions.clear()
                             Svg2Compose.parseToString(
-                                applicationIconPackage = "com",
                                 accessorName = "Hello",
                                 outputSourceDirectory = outputDirectory,
                                 vectorsDirectory = outputDirectory,
