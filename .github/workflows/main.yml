@@ -75,15 +75,6 @@ jobs:
           name: distributable-${{ matrix.os }}
           if-no-files-found: ignore
           path: |
-            build/**/*.dmg
-            build/**/*.app
-            build/**/*.deb
-            build/**/*.msi
-            build/**/*.exe
-            build/compose/jars/*.jar
-            build/compose/binaries/main/app/**
-            /build/compose/binaries/main/app/**
-            build/compose/binaries/main/app/**/*.app
             build/compose/binaries/main/app/
 
   release:
