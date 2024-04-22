@@ -238,7 +238,6 @@ object Svg2Compose {
      * Parses a list of files and generates Kotlin code representations of icons.
      *
      * @param accessorName the name of the Kotlin property used to access the generated icons
-     * @param outputSourceDirectory the directory where the Kotlin code will be generated
      * @param fileList the list of files to parse and generate icons for
      * @param iconNameTransformer transforms the icon name to a valid Kotlin property name (default implementation converts snake_case to upper camel case)
      * @param generatePreview whether to generate preview code for the icons (default is true)
@@ -253,6 +252,7 @@ object Svg2Compose {
         val drawableDir = drawableTempDirectory()
 
         return fileList
+            .asSequence()
             .mapNotNull {
                 when (VectorType.entries.find { v -> v.extension == it.extension }) {
                     VectorType.SVG -> {
@@ -281,14 +281,12 @@ object Svg2Compose {
                 )
             }
             .let { icons ->
-                val writer = IconWriter(
+                IconWriter(
                     icons.values,
                     ClassName("", accessorName),
                     "",
                     generatePreview
-                )
-
-                writer.generateToString()
+                ).generateToString()
             }
     }
 
