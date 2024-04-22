@@ -82,6 +82,7 @@ jobs:
             svgconverter/svgconverter/build/**/*.exe
             svgconverter/svgconverter/build/compose/jars/*.jar
             svgconverter/svgconverter/build/compose/binaries/main/app/**
+            /svgconverter/svgconverter/build/compose/binaries/main/app/**
 
   release:
     name: Release new version
