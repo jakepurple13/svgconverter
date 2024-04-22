@@ -42,8 +42,12 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "svgconverter"
+            packageName = "Svg Converter"
             packageVersion = "1.0.0"
+
+            macOS {
+                appStore = false
+            }
         }
     }
 }
