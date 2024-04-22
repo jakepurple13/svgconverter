@@ -66,7 +66,5 @@ class LangKotlin : Lang() {
             Prettify.PR_LITERAL,
             Regex("^[a-zA-Z0-9_]+@")
         )
-
-
     }
 }
