@@ -30,6 +30,10 @@ dependencies {
     implementation("com.android.tools:common:27.2.0-alpha16")
     implementation("com.squareup:kotlinpoet:1.9.0")
     implementation("org.ogce:xpp3:1.1.6")
+    implementation("media.kamel:kamel-image:0.9.4")
+    val ktor_version = "2.3.10"
+    implementation("io.ktor:ktor-client-core:$ktor_version")
+    implementation("io.ktor:ktor-client-cio:$ktor_version")
 }
 
 compose.desktop {

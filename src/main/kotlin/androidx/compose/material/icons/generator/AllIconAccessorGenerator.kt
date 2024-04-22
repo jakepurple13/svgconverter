@@ -1,6 +1,5 @@
 package androidx.compose.material.icons.generator
 
-import GeneratedGroup
 import androidx.compose.material.icons.generator.util.backingPropertySpec
 import androidx.compose.material.icons.generator.util.withBackingProperty
 import com.squareup.kotlinpoet.*
