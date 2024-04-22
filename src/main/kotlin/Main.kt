@@ -109,7 +109,7 @@ fun FrameWindowScope.App() {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        Button(
+                        OutlinedButton(
                             onClick = { showPreview = !showPreview },
                         ) {
                             Text("Include Preview?")
