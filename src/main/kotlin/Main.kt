@@ -33,6 +33,8 @@ import java.awt.dnd.*
 import java.io.File
 
 // Makes use of a modified version of https://github.com/DevSrSouza/svg-to-compose to convert svg/drawable to compose
+// The modification are so that the only files that are dealt with are reading in, no folders containing them,
+// no output of files, just file to string.
 // And https://github.com/Qawaz/compose-code-editor to show the kotlin code beautifully
 
 val outputDirectory = File(System.getProperty("user.home") + "/Desktop/svgconverter/")
@@ -53,7 +55,7 @@ fun FrameWindowScope.App() {
         FileDialog(
             FileDialogMode.Load,
             block = {
-                setFilenameFilter { f, name -> name.endsWith(".svg") || name.endsWith(".xml") }
+                setFilenameFilter { _, name -> name.endsWith(".svg") || name.endsWith(".xml") }
                 isMultipleMode = true
             }
         ) { _, files ->
