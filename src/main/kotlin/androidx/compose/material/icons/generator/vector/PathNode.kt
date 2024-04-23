@@ -29,39 +29,53 @@ sealed class PathNode(val isCurve: Boolean = false, val isQuad: Boolean = false)
      * function to add this node to the builder.
      */
     abstract fun asFunctionCall(): String
+    abstract fun asSwiftFunctionCall(): String
 
     // RelativeClose and Close are considered the same internally, so we represent both with Close
     // for simplicity and to make equals comparisons robust.
     object Close : PathNode() {
         override fun asFunctionCall() = "close()"
+        override fun asSwiftFunctionCall(): String = ".closeSubpath()"
     }
 
     data class RelativeMoveTo(val x: Float, val y: Float) : PathNode() {
         override fun asFunctionCall() = "moveToRelative(${x}f, ${y}f)"
+        override fun asSwiftFunctionCall(): String = ".move(to: CGPoint(x: $x*width, y: $y*height))"
     }
+
     data class MoveTo(val x: Float, val y: Float) : PathNode() {
         override fun asFunctionCall() = "moveTo(${x}f, ${y}f)"
+        override fun asSwiftFunctionCall(): String = ".move(to: CGPoint(x: $x*width, y: $y*height))"
     }
 
     data class RelativeLineTo(val x: Float, val y: Float) : PathNode() {
         override fun asFunctionCall() = "lineToRelative(${x}f, ${y}f)"
+        override fun asSwiftFunctionCall(): String = ".move(to: CGPoint(x: $x*width, y: $y*height))"
     }
+
     data class LineTo(val x: Float, val y: Float) : PathNode() {
         override fun asFunctionCall() = "lineTo(${x}f, ${y}f)"
+        override fun asSwiftFunctionCall(): String = ".addLine(to: CGPoint(x: $x*width, y: $y*height))"
     }
 
     data class RelativeHorizontalTo(val x: Float) : PathNode() {
         override fun asFunctionCall() = "horizontalLineToRelative(${x}f)"
+        override fun asSwiftFunctionCall(): String = "rht"
     }
+
     data class HorizontalTo(val x: Float) : PathNode() {
         override fun asFunctionCall() = "horizontalLineTo(${x}f)"
+        override fun asSwiftFunctionCall(): String = "ht"
     }
 
     data class RelativeVerticalTo(val y: Float) : PathNode() {
         override fun asFunctionCall() = "verticalLineToRelative(${y}f)"
+        override fun asSwiftFunctionCall(): String = "rvt"
     }
+
     data class VerticalTo(val y: Float) : PathNode() {
         override fun asFunctionCall() = "verticalLineTo(${y}f)"
+        override fun asSwiftFunctionCall(): String = "vt"
     }
 
     data class RelativeCurveTo(
@@ -70,9 +84,11 @@ sealed class PathNode(val isCurve: Boolean = false, val isQuad: Boolean = false)
         val dx2: Float,
         val dy2: Float,
         val dx3: Float,
-        val dy3: Float
+        val dy3: Float,
     ) : PathNode(isCurve = true) {
         override fun asFunctionCall() = "curveToRelative(${dx1}f, ${dy1}f, ${dx2}f, ${dy2}f, ${dx3}f, ${dy3}f)"
+        override fun asSwiftFunctionCall(): String =
+            ".addCurve(to: CGPoint(x: $dx1*width, y: $dy1*height), control1: CGPoint(x: $dx2*width, y: $dy2*height), control2: CGPoint(x: $dx3*width, y: $dy3*height))"
     }
 
     data class CurveTo(
@@ -81,59 +97,69 @@ sealed class PathNode(val isCurve: Boolean = false, val isQuad: Boolean = false)
         val x2: Float,
         val y2: Float,
         val x3: Float,
-        val y3: Float
+        val y3: Float,
     ) : PathNode(isCurve = true) {
         override fun asFunctionCall() = "curveTo(${x1}f, ${y1}f, ${x2}f, ${y2}f, ${x3}f, ${y3}f)"
+        override fun asSwiftFunctionCall(): String =
+            ".addCurve(to: CGPoint(x: $x1*width, y: $y1*height), control1: CGPoint(x: $x2*width, y: $y2*height), control2: CGPoint(x: $x3*width, y: $y3*height))"
     }
 
     data class RelativeReflectiveCurveTo(
         val x1: Float,
         val y1: Float,
         val x2: Float,
-        val y2: Float
+        val y2: Float,
     ) : PathNode(isCurve = true) {
         override fun asFunctionCall() = "reflectiveCurveToRelative(${x1}f, ${y1}f, ${x2}f, ${y2}f)"
+        override fun asSwiftFunctionCall(): String =
+            ".addCurve(to: CGPoint(x: $x1*width, y: $y1*height), control1: CGPoint(x: $x2*width, y: $y2*height))"
     }
 
     data class ReflectiveCurveTo(
         val x1: Float,
         val y1: Float,
         val x2: Float,
-        val y2: Float
+        val y2: Float,
     ) : PathNode(isCurve = true) {
         override fun asFunctionCall() = "reflectiveCurveTo(${x1}f, ${y1}f, ${x2}f, ${y2}f)"
+        override fun asSwiftFunctionCall(): String =
+            ".addCurve(to: CGPoint(x: $x1*width, y: $y1*height), control1: CGPoint(x: $x2*width, y: $y2*height))"
     }
 
     data class RelativeQuadTo(
         val x1: Float,
         val y1: Float,
         val x2: Float,
-        val y2: Float
+        val y2: Float,
     ) : PathNode(isQuad = true) {
         override fun asFunctionCall() = "quadToRelative(${x1}f, ${y1}f, ${x2}f, ${y2}f)"
+        override fun asSwiftFunctionCall(): String = ""
     }
 
     data class QuadTo(
         val x1: Float,
         val y1: Float,
         val x2: Float,
-        val y2: Float
+        val y2: Float,
     ) : PathNode(isQuad = true) {
         override fun asFunctionCall() = "quadTo(${x1}f, ${y1}f, ${x2}f, ${y2}f)"
+        override fun asSwiftFunctionCall(): String = ""
     }
 
     data class RelativeReflectiveQuadTo(
         val x: Float,
-        val y: Float
+        val y: Float,
     ) : PathNode(isQuad = true) {
         override fun asFunctionCall() = "reflectiveQuadToRelative(${x}f, ${y}f)"
+        override fun asSwiftFunctionCall(): String = ""
     }
 
     data class ReflectiveQuadTo(
         val x: Float,
-        val y: Float
+        val y: Float,
     ) : PathNode(isQuad = true) {
         override fun asFunctionCall() = "reflectiveQuadTo(${x}f, ${y}f)"
+        override fun asSwiftFunctionCall(): String = ""
     }
 
     data class RelativeArcTo(
@@ -143,9 +169,12 @@ sealed class PathNode(val isCurve: Boolean = false, val isQuad: Boolean = false)
         val isMoreThanHalf: Boolean,
         val isPositiveArc: Boolean,
         val arcStartDx: Float,
-        val arcStartDy: Float
+        val arcStartDy: Float,
     ) : PathNode() {
-        override fun asFunctionCall() = "arcToRelative(${horizontalEllipseRadius}f, ${verticalEllipseRadius}f, ${theta}f, $isMoreThanHalf, $isPositiveArc, ${arcStartDx}f, ${arcStartDy}f)"
+        override fun asFunctionCall() =
+            "arcToRelative(${horizontalEllipseRadius}f, ${verticalEllipseRadius}f, ${theta}f, $isMoreThanHalf, $isPositiveArc, ${arcStartDx}f, ${arcStartDy}f)"
+
+        override fun asSwiftFunctionCall(): String = ""
     }
 
     data class ArcTo(
@@ -155,9 +184,12 @@ sealed class PathNode(val isCurve: Boolean = false, val isQuad: Boolean = false)
         val isMoreThanHalf: Boolean,
         val isPositiveArc: Boolean,
         val arcStartX: Float,
-        val arcStartY: Float
+        val arcStartY: Float,
     ) : PathNode() {
-        override fun asFunctionCall() = "arcTo(${horizontalEllipseRadius}f, ${verticalEllipseRadius}f, ${theta}f, $isMoreThanHalf, $isPositiveArc, ${arcStartX}f, ${arcStartY}f)"
+        override fun asFunctionCall() =
+            "arcTo(${horizontalEllipseRadius}f, ${verticalEllipseRadius}f, ${theta}f, $isMoreThanHalf, $isPositiveArc, ${arcStartX}f, ${arcStartY}f)"
+
+        override fun asSwiftFunctionCall(): String = ""
     }
 }
 /* ktlint-enable max-line-length */
@@ -172,6 +204,7 @@ internal fun Char.toPathNodes(args: FloatArray): List<PathNode> = when (this) {
     RelativeCloseKey, CloseKey -> listOf(
         PathNode.Close
     )
+
     RelativeMoveToKey -> pathNodesFromArgs(
         args,
         NUM_MOVE_TO_ARGS
@@ -374,7 +407,7 @@ internal fun Char.toPathNodes(args: FloatArray): List<PathNode> = when (this) {
 private inline fun pathNodesFromArgs(
     args: FloatArray,
     numArgs: Int,
-    nodeFor: (subArray: FloatArray) -> PathNode
+    nodeFor: (subArray: FloatArray) -> PathNode,
 ): List<PathNode> {
     return (0..args.size - numArgs step numArgs).map { index ->
         val subArray = args.slice(index until index + numArgs).toFloatArray()
@@ -386,11 +419,13 @@ private inline fun pathNodesFromArgs(
                 subArray[0],
                 subArray[1]
             )
+
             node is PathNode.RelativeMoveTo && index > 0 ->
                 PathNode.RelativeLineTo(
                     subArray[0],
                     subArray[1]
                 )
+
             else -> node
         }
     }

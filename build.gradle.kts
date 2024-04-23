@@ -34,6 +34,7 @@ dependencies {
     val ktor_version = "2.3.10"
     implementation("io.ktor:ktor-client-core:$ktor_version")
     implementation("io.ktor:ktor-client-cio:$ktor_version")
+    implementation("io.outfoxx:swiftpoet:1.6.5")
 }
 
 compose.desktop {

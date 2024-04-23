@@ -22,7 +22,7 @@ enum class CodeLang(val langProvider: Prettify.LangProvider?, val value: List<St
     SML(null, listOf("ml")),
     FSharp(null, listOf("fs")),
     JSON(null, listOf("json")),
-    XML(null, listOf("xml")),
+    XML({ LangXML() }, LangXML.fileExtensions),
     Proto(null, listOf("proto")),
     RegEx(null, listOf("regex")),
     Appollo({ LangAppollo() }, LangAppollo.fileExtensions),

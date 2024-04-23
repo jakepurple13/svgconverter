@@ -42,11 +42,21 @@ val outputDirectory = File(System.getProperty("user.home") + "/Desktop/svgconver
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun FrameWindowScope.App() {
-    var svgText by remember { mutableStateOf("") }
     var showPreview by remember { mutableStateOf(true) }
     val listOfConversions = remember { mutableStateListOf<FileInfo>() }
     val filesToConvert = remember { mutableStateListOf<File>() }
     var chosenVectorFile by remember { mutableStateOf<FileInfo?>(null) }
+    var language by remember { mutableStateOf(CodeLang.Kotlin) }
+    val svgText by remember {
+        derivedStateOf {
+            when (language) {
+                CodeLang.Kotlin -> chosenVectorFile?.fileSpec?.toString()
+                CodeLang.Swift -> chosenVectorFile?.swiftFileSpec?.toString()
+                CodeLang.XML -> chosenVectorFile?.file?.readText()
+                else -> null
+            } ?: ""
+        }
+    }
 
     var dragState by remember { mutableStateOf(false) }
 
@@ -236,7 +246,7 @@ fun FrameWindowScope.App() {
                                         OutlinedCard(
                                             onClick = {
                                                 chosenVectorFile = it
-                                                svgText = it.fileSpec.toString()
+                                                //svgText = it.fileSpec.toString()
                                             }
                                         ) {
                                             ListItem(
@@ -277,27 +287,83 @@ fun FrameWindowScope.App() {
                     modifier = Modifier.matchParentSize()
                 ) {
                     val clipboard = LocalClipboardManager.current
-                    IconButton(
-                        onClick = { clipboard.setText(AnnotatedString(svgText)) },
-                        enabled = svgText.isNotEmpty(),
-                        modifier = Modifier.align(Alignment.End)
-                    ) { Icon(Icons.Default.CopyAll, null) }
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        var showDropDown by remember { mutableStateOf(false) }
+                        ExposedDropdownMenuBox(
+                            showDropDown,
+                            onExpandedChange = { showDropDown = it },
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        ) {
+                            ExposedDropdownMenu(
+                                showDropDown,
+                                onDismissRequest = { showDropDown = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Kotlin") },
+                                    onClick = {
+                                        language = CodeLang.Kotlin
+                                        showDropDown = false
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Swift") },
+                                    onClick = {
+                                        language = CodeLang.Swift
+                                        showDropDown = false
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Original") },
+                                    onClick = {
+                                        language = CodeLang.XML
+                                        showDropDown = false
+                                    }
+                                )
+                            }
+                            OutlinedTextField(
+                                when (language) {
+                                    CodeLang.Kotlin -> "Kotlin"
+                                    CodeLang.Swift -> "Swift"
+                                    else -> "Original"
+                                },
+                                onValueChange = {},
+                                readOnly = true,
+                                singleLine = true,
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = showDropDown) },
+                                modifier = Modifier.menuAnchor()
+                            )
+                        }
+
+                        IconButton(
+                            onClick = { clipboard.setText(AnnotatedString(svgText)) },
+                            enabled = svgText.isNotEmpty(),
+                        ) { Icon(Icons.Default.CopyAll, null) }
+                    }
+
+                    HorizontalDivider()
+
                     SelectionContainer(
                         modifier = Modifier
                             .fillMaxHeight()
                             .verticalScroll(verticalScroll),
                     ) {
-                        val language = CodeLang.Kotlin
                         val parser = remember { PrettifyParser() }
                         val themeState by remember { mutableStateOf(CodeThemeType.Monokai) }
                         val theme = remember(themeState) { themeState.theme }
-                        val parsedCode = remember(svgText) {
-                            parseCodeAsAnnotatedString(
-                                parser = parser,
-                                theme = theme,
-                                lang = language,
-                                code = svgText
-                            )
+                        val parsedCode = remember(svgText, language) {
+                            if (language == CodeLang.XML) {
+                                AnnotatedString(svgText)
+                            } else {
+                                parseCodeAsAnnotatedString(
+                                    parser = parser,
+                                    theme = theme,
+                                    lang = language,
+                                    code = svgText
+                                )
+                            }
                         }
                         Text(
                             parsedCode,

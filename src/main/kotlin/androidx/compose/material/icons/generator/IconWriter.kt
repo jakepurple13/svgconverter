@@ -16,6 +16,7 @@
 
 package androidx.compose.material.icons.generator
 
+import androidx.compose.ui.util.fastZip
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.MemberName
@@ -103,23 +104,30 @@ class IconWriter(
         icons: Map<File, Icon>,
         iconNamePredicate: (String) -> Boolean = { true },
     ): List<FileInfo> {
+        return icons
+            .filter { icon -> iconNamePredicate(icon.value.kotlinName) }
+            .map { icon ->
+                val iconName = icon.value.kotlinName
 
-        return icons.filter { icon ->
-            iconNamePredicate(icon.value.kotlinName)
-        }.map { icon ->
-            val iconName = icon.value.kotlinName
+                val vector = IconParser(icon.value).parse()
 
-            val vector = IconParser(icon.value).parse()
-
-            val (fileSpec, _) = VectorAssetGenerator(
-                iconName,
-                groupPackage,
-                vector,
-                generatePreview
-            ).createFileSpec(groupClass)
-            FileInfo(fileSpec, icon.value.kotlinName, icon.key)
-        }
+                val (fileSpec, _) = VectorAssetGenerator(
+                    iconName,
+                    groupPackage,
+                    vector,
+                    generatePreview
+                ).createFileSpec(groupClass)
+                FileInfo(fileSpec, icon.value.kotlinName, icon.key)
+            }
+            .fastZip(Svg2SwiftUi.parseToString("asdf", icons.keys.toList())) { fi, fs ->
+                fi.copy(swiftFileSpec = fs)
+            }
     }
 }
 
-data class FileInfo(val fileSpec: FileSpec, val name: String, val file: File? = null)
+data class FileInfo(
+    val fileSpec: FileSpec,
+    val name: String,
+    val file: File? = null,
+    val swiftFileSpec: io.outfoxx.swiftpoet.FileSpec? = null,
+)
