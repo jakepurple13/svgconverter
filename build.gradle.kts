@@ -44,7 +44,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Svg Converter"
-            packageVersion = "1.0.0"
+            packageVersion = "1.0.1"
 
             macOS {
                 appStore = false

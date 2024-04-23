@@ -132,7 +132,11 @@ class VectorAssetGenerator(
             .addAnnotation(composableAnnotation)
             .addCode(buildCodeBlock {
                 beginControlFlow("%M(modifier = %M.%M(12.%M))", box, modifier, padding, paddingValue)
-                addStatement("%M(imageVector = %M, contentDescription = \"\")", composeImage, iconName)
+                addStatement(
+                    "%M(imageVector = %M, contentDescription = \"${iconName.simpleName}\")",
+                    composeImage,
+                    iconName
+                )
                 endControlFlow()
             })
             .build()
