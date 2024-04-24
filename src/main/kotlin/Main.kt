@@ -399,7 +399,8 @@ fun FrameWindowScope.App() {
     }
     Toaster(
         state = toaster,
-        darkTheme = true
+        darkTheme = true,
+        richColors = true
     )
 }
 
