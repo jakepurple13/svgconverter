@@ -20,6 +20,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.AwtWindow
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.application
+import com.dokar.sonner.ToastType
+import com.dokar.sonner.Toaster
+import com.dokar.sonner.rememberToasterState
 import com.wakaztahir.codeeditor.model.CodeLang
 import com.wakaztahir.codeeditor.prettify.PrettifyParser
 import com.wakaztahir.codeeditor.theme.CodeThemeType
@@ -42,6 +45,7 @@ val outputDirectory = File(System.getProperty("user.home") + "/Desktop/svgconver
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun FrameWindowScope.App() {
+    val toaster = rememberToasterState()
     var showPreview by remember { mutableStateOf(true) }
     val listOfConversions = remember { mutableStateListOf<FileInfo>() }
     val filesToConvert = remember { mutableStateListOf<File>() }
@@ -140,6 +144,7 @@ fun FrameWindowScope.App() {
                 floatingActionButton = {
                     LargeFloatingActionButton(
                         onClick = {
+                            val current = System.currentTimeMillis()
                             listOfConversions.clear()
                             //Use this for when we want them all in a folder
                             /*outputDirectory.deleteRecursively()
@@ -161,6 +166,10 @@ fun FrameWindowScope.App() {
                                 fileList = filesToConvert,
                                 generatePreview = showPreview
                             ).let(listOfConversions::addAll)
+                            toaster.show(
+                                "Took ${System.currentTimeMillis() - current}ms",
+                                type = ToastType.Info
+                            )
                         }
                     ) { Text("Convert") }
                 }
@@ -388,6 +397,10 @@ fun FrameWindowScope.App() {
             }
         }
     }
+    Toaster(
+        state = toaster,
+        darkTheme = true
+    )
 }
 
 enum class FileDialogMode(internal val id: Int) { Load(FileDialog.LOAD), Save(FileDialog.SAVE) }

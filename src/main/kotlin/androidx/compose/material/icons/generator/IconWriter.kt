@@ -119,7 +119,11 @@ class IconWriter(
                 ).createFileSpec(groupClass)
                 FileInfo(fileSpec, icon.value.kotlinName, icon.key)
             }
-            .fastZip(Svg2SwiftUi.parseToString("asdf", icons.keys.toList())) { fi, fs ->
+            .fastZip(
+                runCatching { Svg2SwiftUi.parseToString("asdf", icons.keys.toList()) }
+                    .onFailure { it.printStackTrace() }
+                    .getOrDefault(emptyList())
+            ) { fi, fs ->
                 fi.copy(swiftFileSpec = fs)
             }
     }

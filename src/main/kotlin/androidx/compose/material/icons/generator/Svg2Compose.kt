@@ -260,7 +260,8 @@ object Svg2Compose {
                         val parsedFile = File(drawableDir, "${iconName}.xml")
                         parsedFile.parentFile.mkdirs()
 
-                        Svg2Vector.parseSvgToXml(it, parsedFile.outputStream())
+                        runCatching { Svg2Vector.parseSvgToXml(it, parsedFile.outputStream()) }
+                            .onFailure { t -> t.printStackTrace() }
 
                         it to parsedFile
                     }

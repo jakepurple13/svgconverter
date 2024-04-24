@@ -35,6 +35,7 @@ dependencies {
     implementation("io.ktor:ktor-client-core:$ktor_version")
     implementation("io.ktor:ktor-client-cio:$ktor_version")
     implementation("io.outfoxx:swiftpoet:1.6.5")
+    implementation("io.github.dokar3:sonner:0.3.5")
 }
 
 compose.desktop {
