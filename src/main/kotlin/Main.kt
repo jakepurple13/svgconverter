@@ -56,8 +56,7 @@ fun FrameWindowScope.App() {
             when (language) {
                 CodeLang.Kotlin -> chosenVectorFile?.fileSpec?.toString()
                 CodeLang.Swift -> chosenVectorFile?.swiftFileSpec?.toString()
-                CodeLang.XML -> chosenVectorFile?.file?.readText()
-                else -> null
+                else -> chosenVectorFile?.file?.readText()
             } ?: ""
         }
     }
@@ -310,34 +309,18 @@ fun FrameWindowScope.App() {
                                 showDropDown,
                                 onDismissRequest = { showDropDown = false }
                             ) {
-                                DropdownMenuItem(
-                                    text = { Text("Kotlin") },
-                                    onClick = {
-                                        language = CodeLang.Kotlin
-                                        showDropDown = false
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Swift") },
-                                    onClick = {
-                                        language = CodeLang.Swift
-                                        showDropDown = false
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Original") },
-                                    onClick = {
-                                        language = CodeLang.XML
-                                        showDropDown = false
-                                    }
-                                )
+                                allowedLanguages.forEach {
+                                    DropdownMenuItem(
+                                        text = { Text(it.name) },
+                                        onClick = {
+                                            language = it
+                                            showDropDown = false
+                                        }
+                                    )
+                                }
                             }
                             OutlinedTextField(
-                                when (language) {
-                                    CodeLang.Kotlin -> "Kotlin"
-                                    CodeLang.Swift -> "Swift"
-                                    else -> "Original"
-                                },
+                                language.name,
                                 onValueChange = {},
                                 readOnly = true,
                                 singleLine = true,
@@ -363,16 +346,20 @@ fun FrameWindowScope.App() {
                         val themeState by remember { mutableStateOf(CodeThemeType.Monokai) }
                         val theme = remember(themeState) { themeState.theme }
                         val parsedCode = remember(svgText, language) {
-                            if (language == CodeLang.XML) {
-                                AnnotatedString(svgText)
-                            } else {
+                            runCatching {
                                 parseCodeAsAnnotatedString(
                                     parser = parser,
                                     theme = theme,
                                     lang = language,
                                     code = svgText
                                 )
-                            }
+                            }.fold(
+                                onSuccess = { it },
+                                onFailure = {
+                                    it.printStackTrace()
+                                    AnnotatedString(svgText)
+                                }
+                            )
                         }
                         Text(
                             parsedCode,
@@ -404,7 +391,12 @@ fun FrameWindowScope.App() {
     )
 }
 
-enum class FileDialogMode(internal val id: Int) { Load(FileDialog.LOAD), Save(FileDialog.SAVE) }
+enum class FileDialogMode(internal val id: Int) {
+    Load(FileDialog.LOAD),
+
+    @Suppress("unused")
+    Save(FileDialog.SAVE)
+}
 
 @Composable
 private fun FileDialog(
@@ -428,6 +420,13 @@ private fun FileDialog(
         }.apply(block)
     },
     dispose = FileDialog::dispose
+)
+
+private val allowedLanguages = listOf(
+    CodeLang.Kotlin,
+    CodeLang.Swift,
+    CodeLang.XML,
+    CodeLang.HTML,
 )
 
 fun main() {
